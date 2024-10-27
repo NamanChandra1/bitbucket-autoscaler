@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bitbucket-autoscaler
+  labels:
+    app: bitbucket-autoscaler
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bitbucket-autoscaler
+  template:
+    metadata:
+      labels:
+        app: bitbucket-autoscaler
+    spec:
+      volumes:
+      - name: bitbucket-autoscaler
+        secret:
+          secretName: bitbucket-autoscaler
+      containers:
+      - name: bitbucket-autoscaler-container
+        image: bitbucket-autoscaler:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: BITBUCKET_WORKSPACE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: BITBUCKET_WORKSPACE_TOKEN
+              name: bitbucket-autoscaler
+        volumeMounts:
+        - name: bitbucket-autoscaler
+          readOnly: true
+          mountPath: "/secrets"
