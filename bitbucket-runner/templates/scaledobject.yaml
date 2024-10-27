@@ -1,0 +1,25 @@
+{{- if .Values.spec.scaledobject.enabled  }}
+apiVersion: "keda.sh/v1alpha1"
+kind: ScaledObject
+metadata:
+  name: {{ .Values.spec.service_name }}-scaledobject
+  labels:
+    name: {{ .Values.spec.service_name }}-scaledobject
+spec:
+  maxReplicaCount: 1
+  minReplicaCount: 0
+  pollingInterval: {{ .Values.spec.scaledobject.pollingInterval | default 10}}
+  fallback:
+    failureThreshold: 2
+    replicas: 1
+  scaleTargetRef:
+    apiVersion: "apps/v1"
+    kind: "Deployment"
+    name: {{ .Values.spec.service_name }}
+  triggers:
+  - metadata:
+        targetValue: "1"
+        url: "http://bitbucket-autoscaler-svc.bitbucket-runner.svc.cluster.local/{{ .Values.spec.scaledobject.repoName}}"
+        valueLocation: 'result'
+    type: metrics-api
+{{- end }}

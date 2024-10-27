@@ -1,0 +1,71 @@
+{{- if .Values.spec.job.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Values.spec.service_name }}
+  name: {{ .Values.spec.service_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.spec.service_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.spec.service_name }}
+    spec:
+      serviceAccountName: {{ .Values.spec.serviceaccount.name }}
+      containers:
+        - name: {{ .Values.spec.service_name }}
+          image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner
+          resources:
+            limits:
+              cpu: {{ .Values.spec.resources_docker.limits.cpu }}
+              memory: {{ .Values.spec.resources_docker.limits.memory }}
+            requests:
+              cpu: {{ .Values.spec.resources_docker.requests.cpu }}
+              memory: {{ .Values.spec.resources_docker.requests.memory }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.spec.service_name }}-repo-secret
+          env:
+            - name: OAUTH_CLIENT_ID
+              value: {{ .Values.spec.BASE64_OAUTH_CLIENT_ID }}
+            - name: OAUTH_CLIENT_SECRET
+              value: {{ .Values.spec.BASE64_OAUTH_CLIENT_SECRET }}
+            - name: WORKING_DIRECTORY
+              value: "/tmp"
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: docker-containers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: var-run
+              mountPath: /var/run
+        - name: docker-in-docker
+          image: docker:23.0-dind
+          resources:
+            limits:
+              cpu: {{ .Values.spec.resources.limits.cpu }}
+              memory: {{ .Values.spec.resources.limits.memory }}
+              ephemeral-storage: {{ .Values.spec.resources.limits.ephemeral }}
+            requests:
+              cpu: {{ .Values.spec.resources.requests.cpu }}
+              memory: {{ .Values.spec.resources.requests.memory }}
+              ephemeral-storage: {{ .Values.spec.resources.requests.ephemeral }}
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: docker-containers
+              mountPath: /var/lib/docker/containers
+            - name: var-run
+              mountPath: /var/run
+      volumes:
+        - name: tmp
+        - name: docker-containers
+        - name: var-run
+{{- end }}
