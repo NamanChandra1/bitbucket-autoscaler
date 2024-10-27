@@ -1,0 +1,35 @@
+spec:
+  job:
+   enabled: true
+  service_name: &service_name "xxxxx"
+  namespace: bitbucket
+  BASE64_OAUTH_CLIENT_ID: xxxxxxxxxxxxxxxxxxxxxx   # get values from bitbucket runner
+  BASE64_OAUTH_CLIENT_SECRET: xxxxxxxxxxxxxxxxxxxxxxx  # get values from bitbucket runner
+  serviceaccount:
+    enabled: false
+    name: &sa bitbucket-runner-sa
+  secrets:
+   enabled: true
+   stringData:
+    ACCOUNT_UUID: "{xxxxxxxxxxxxxxxxxxxxxxxx}" # get values from bitbucket runner
+    RUNNER_UUID: "{xxxxxxxxxxxxxxxxxxxxxxxx}"  # get values from bitbucket runner
+    REPOSITORY_UUID: "{xxxxxxxxxxxxxxxxxxxxx}" # get values from bitbucket runner
+  resources:
+    limits:
+      cpu: "4000m"
+      memory: "3000Mi"
+      ephemeral: "4Gi"           
+    requests:
+      cpu: "50m"
+      memory: "200Mi"
+      ephemeral: "2Gi"
+  resources_docker:
+    limits:
+      cpu: "8000m"
+      memory: "8000Mi"          
+    requests:
+      cpu: "50m"
+      memory: "200Mi"
+  scaledobject:
+    enabled: true
+    repoName: "REPO_NAME" #important for scaledobject and ondemand scaling
